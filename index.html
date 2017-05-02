@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/jquery-3.1.0.js"></script>
+    <style>
+
+        #stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #000;
+        }
+        #Solar_system {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+<canvas id="stars" ></canvas>
+<canvas id="Solar_system" ></canvas>
+</body>
+</html>
+
+<script>
+
+    //获取画布
+    var cvs=$("#stars");//群星画布
+    var ctx=cvs[0].getContext('2d');
+    var cvs2=$("#Solar_system");//太阳系画布
+    var ctx2=cvs2[0].getContext("2d");
+
+    //获取窗口宽高
+    var screenH = $(window).height();
+    var screenW = $(window).width();
+
+    //设置帧数
+    var fps=30;
+
+    //创造群星
+    var stars = [];
+
+    //星星数量
+    var numStars = 2000;
+
+    //星体旋转时间
+    var time=0;
+
+
+    //设置画布宽高
+    cvs.attr('height', screenH);
+    cvs.attr('width', screenW);
+    cvs2.attr('height', screenH);
+    cvs2.attr('width', screenW);
+
+    //遍历群星
+    for(var i = 0; i < numStars; i++) {
+
+        //X轴随机坐标并取最接近整数的数值
+
+        var x = Math.round(Math.random() * screenW);
+
+        //Y轴随机坐标并取最接近整数的数值
+
+        var y = Math.round(Math.random() * screenH);
+
+        //随机星星的半径为1-3
+
+        var r = Math.random() * 2+1;
+
+        //随机星星透明度从0-1
+
+        var opacity = Math.random();
+
+        //画出星星
+
+        var star = new Star(x, y, r, opacity);
+
+        //将星星添加到数组中
+
+        stars.push(star);
+    }
+
+
+    $(function() {
+        //设置定时器-刷新画布-星星
+        setInterval(draw, 1000/fps);
+        //设置定时器-刷新画布-太阳系
+        setInterval(function(){//为视觉效果，将公转时间整体*3.否则水星转动速度过快！
+            ctx2.clearRect(0,0,screenW,screenH);
+            drawSystem(0,0,50,0,"#fa3737","#f80a0a");// 太阳
+            drawSystem(100,0,15,87.70*3,"#A64200","#F79704");//水星
+            drawSystem(150,0,17,224.701*3,"#D69521","#D57D1B");//金星
+            drawSystem(200,0,22,365.24229*3,"#080A44","#0500d3");//地球
+            drawSystem(250,0,18,686.9*3,"#DA6941","#E7B167");//火星
+            drawSystem(300,0,27,4332.589*3,"#F8F3DF","#635D4D");//木星
+            drawSystem(350,0,23,10759.5*3,"#292522","#302A2C");//土星
+            drawSystem(400,0,21,30799.095*3,"#CAEFF4","#5F7C82");//天王星
+            drawSystem(450,0,19,164.8*365*3,"#67C2FB","#1F2557");//海王星
+        },1000/fps);
+
+    });
+
+    //画出一帧
+    function draw() {
+        //清除画布
+        ctx.clearRect(0, 0, screenW, screenH);
+        //遍历数组中的群星
+        $.each(stars, function() {
+            //将每个星星在画布中调用
+            this.drawstar(ctx);
+        });
+    }
+
+    //群星的属性
+    function Star(x, y, r, opacity) {
+        this.x = parseInt(x);
+        this.y = parseInt(y);
+        this.r = parseInt(r);
+        this.opacity = opacity;
+        this.factor = 1;
+        this.increment = Math.random() * .03;
+    }
+    //绘制五角
+    Star.prototype.drawstar = function() {
+
+        ctx.rotate(Math.PI/10);
+
+        //保存之前的画布内容
+        ctx.save();
+
+        // 重新映射星星坐标
+        ctx.translate(this.x, this.y);
+
+        // 改变透明度
+        if(this.opacity > 1) {
+            this.factor = -1;
+        }
+        else if(this.opacity <= 0) {
+            this.factor = 1;
+
+            this.x = Math.round(Math.random() * screenW);
+            this.y = Math.round(Math.random() * screenH);
+        }
+
+        this.opacity += this.increment * this.factor;
+        //重置路径
+        ctx.beginPath();
+        //绘制五角
+        for (var i = 5; i--;) {
+            ctx.lineTo(0, this.r);
+            ctx.translate(0, this.r);
+            ctx.rotate((Math.PI * 2 / 10));
+            ctx.lineTo(0, - this.r);
+            ctx.translate(0, - this.r);
+            ctx.rotate(-(Math.PI * 6 / 10));
+        }
+        ctx.lineTo(0, this.r);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255, 255, 200, " + this.opacity + ")";
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = '#ffff33';
+        ctx.fill();
+
+        ctx.restore();
+    };
+
+    //太阳系轨迹
+
+    function orbit(){
+        //循环生成8个轨迹圆
+
+        for(var i=0;i<9;i++){
+            ctx2.beginPath();// 开始路径
+            ctx2.arc(screenW/2,screenH/2,50*(i+1),0,Math.PI*2); //i从1开始生成8个轨迹-初始r半径为50
+            ctx2.strokeStyle="rgba(255,255,255,0.1)";
+            ctx2.stroke();
+            ctx2.closePath()
+        }
+        //绘制星体
+    }
+
+    function drawSystem(x,y,r,cycle,sColor,eColor){ //cycle 星体公转时间  r 星体大小
+
+        orbit();
+
+        ctx2.save();//保存之前的画布内容
+        ctx2.translate(screenW/2,screenH/2);//改变画布的圆心坐标点
+        ctx2.rotate(time*(360/cycle)*Math.PI/180);//旋转
+        ctx2.beginPath();
+        ctx2.arc(x,y,r,0,Math.PI*2);
+        var color=ctx.createRadialGradient(x,y,0,x,y,r);
+        color.addColorStop(0,sColor);//0 其实颜色值
+        color.addColorStop(1,eColor);//1 结束颜色值
+        ctx2.fillStyle=color;
+        ctx2.fill();
+        ctx2.restore();//释放之前的画布内容
+        time++
+    }
+
+
+
+
+
+
+</script>

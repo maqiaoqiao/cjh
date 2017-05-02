@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html,body{margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        #cvs{
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cvs">您的游览器不支持Canvas,请升级游览器</canvas>
+</body>
+</html>
+<script>
+    var cvs=document.getElementById("cvs");
+    var ctx=cvs.getContext("2d");
+
+    var w=cvs.width=window.screen.width;
+    var h=cvs.height=window.screen.height;
+
+    //绘制文本
+    var words=Array(256).join("1").split("");///数组里面的元素用1拼接在一起;
+    console.log(words);
+
+    var text='';
+    var x=0;
+
+    function draw(){
+        ctx.fillStyle="rgba(0,0,0,0.05)";
+        ctx.fillRect(0,0,w,h);
+
+
+        text=String.fromCharCode(65+Math.ceil(Math.random()*57));
+        //随机选择一个字母
+        ctx.fillStyle="#0f0";
+
+
+        words.map(function(y,n){    //循环遍历数组
+
+            x=n*10;//每一个文字间隔10像素
+            ctx.fillText(text,x,y);
+            words[n]=(y>768+Math.random()*484)?0:y+10;  //768:电脑屏幕最小高度(笔记本)
+        });
+    }
+
+
+    setInterval(draw,30)
+
+</script>
